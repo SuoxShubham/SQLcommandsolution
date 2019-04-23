@@ -1,0 +1,110 @@
+
+create table user(
+user_id int not null auto_increment primary key, 
+user_name varchar(30) not null, 
+user_added_date date not null,
+user_password varchar(30) not null,
+user_mobile int(10) not null;
+
+
+create table note( 
+note_id int not null auto_increment primary key ,
+note_title varchar(30) not null,
+note_content varchar(30) not null, 
+note_status varchar(30) not null, 
+note_creation_date date not null);
+
+create table category( 
+category_id int not null auto_increment primary key,
+category_name varchar(30) not null,
+category_desc varchar(30) not null, 
+category_creation_date date not null, 
+category_creator varchar(30) not null);
+
+
+create table reminder( 
+reminder_id int not null auto_increment primary key,
+reminder_name varchar(30) not null, 
+reminder_desc varchar(30) not null,
+reminder_type varchar(30) not null, 
+reminder_creation_date date not null,
+reminder_creator varchar(30) not null);
+
+CREATE TABLE NoteCategory( notecategory_id int not null auto_increment primary key,
+note_id int not null, 
+category_id int not null, 
+foreign key (note_id) references note(note_id),
+foreign key (category_id) references category(category_id));
+
+create table notereminder( notereminder_id int not null auto_increment primary key,
+note_id int not null,
+reminder_id int not null,
+foreign key (note_id) references note(note_id),
+foreign key (reminder_id) references reminder(reminder_id));
+
+create table usernote( usernote_id int not null auto_increment primary key,
+user_id int not null,
+note_id int not null,
+foreign key (note_id) references note(note_id),
+foreign key (user_id) referenes user(user_id);
+
+
+insert into user values(1,'username',curdate(),'abc123',123456789);
+insert into category values(1,'category_name','sample category description',curdate(),'creater_name');
+insert into note values(1,'note_title','sample note content','completed',curdate());
+insert into reminder values(1,'reminder_name','complete rdbms task','critical',curdate(),'creator_name');
+insert into notereminder values(10,1,3);
+insert into notereminder(note_id,reminder_id) values(2,4);
+insert into usernote values(100,1,1);
+insert into usernote(user_id,note_id) values(4,3);
+insert into notecategory values(50,1,4);
+insert into notecategory(note_id,category_id) values(2,3);
+
+select * from user where user_id="some_id" AND user_password="some_password";
+
+select category_name from category where category_creation_date="some_date";
+
+select category_name from category where category_creation_date >= "some_date";
+
+select note_id from userNote where user_id=3;
+
+update note set note_title="some_title" where note_id=1;
+
+select note_id,note_title,note_content,note_status,note_creation_date from usernote,note,user where usernote.note_id=note.note_id and user.user_name="some_value" and usernote.user_id=user.user_id;
+
+select note_id,note_title,note_content,note_status,note_creation_date from notecategory,note,category where notecategory.note_id=note.note_id and category.category_name="some_value" and notecategory.category_id=category.category_id;
+
+select * from reminder where reminder_id =(select reminder_id from notereminder where note_id=2);
+
+select * from reminder where reminder_id=1;
+
+begin;
+insert into note 
+  values(4,'note_name', 'sample note simultaneously','not completed', curdate());
+insert into usernote(user_id,note_id) 
+  values(1,4);
+commit;
+
+begin;
+insert into note 
+  values(5,'note_title', 'sample note simultaneously','not completed', curdate());
+insert into notecategory (note_id,category_id)
+  values(5,2);
+commit;
+
+begin;
+insert into reminder
+  values(3,'reminder_name', 'sample reminder through notereminder','important', curdate(),'user_name');
+insert into notereminder(note_id,reminder_id)
+  values(4,3);
+commit;
+
+delete user,usernote,note from user
+inner join usernote on user.user_id = usernote.user_id
+inner join note on note.note_id = usernote.note_id
+where user.user_id=3 and note.note_title="some_value";
+
+delete note,notecategory,category from note
+inner join notecategory on note.note_id = notecategory.note_id
+inner join category on category.cateogry_id = notecategory.category_id
+where note.note_id=2 and category.category_name="some_value";
